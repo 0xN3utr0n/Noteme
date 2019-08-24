@@ -2,33 +2,33 @@
 
 default rel
 
-%define MAP_GROWSDOWN		0x0100
-%define MAP_ANONYMOUS		0x0020
-%define MAP_PRIVATE			0x0002
-%define PROT_READ			0x1
-%define PROT_WRITE			0x2
-%define PROT_EXEC			0x3
+%define MAP_GROWSDOWN       0x0100
+%define MAP_ANONYMOUS       0x0020
+%define MAP_PRIVATE         0x0002
+%define PROT_READ           0x1
+%define PROT_WRITE          0x2
+%define PROT_EXEC           0x3
 
-%define CLONE_VM			0x00000100
-%define CLONE_FS			0x00000200
-%define CLONE_FILES			0x00000400
-%define CLONE_SIGHAND		0x00000800
-%define CLONE_PARENT		0x00008000
-%define CLONE_THREAD		0x00010000
-%define CLONE_IO			0x80000000
+%define CLONE_VM            0x00000100
+%define CLONE_FS            0x00000200
+%define CLONE_FILES         0x00000400
+%define CLONE_SIGHAND       0x00000800
+%define CLONE_PARENT        0x00008000
+%define CLONE_THREAD        0x00010000
+%define CLONE_IO            0x80000000
 
-%define SYS_MPROTECT		0xa
-%define SYS_MMAP			0x9
-%define SYS_CLONE			0x38
-%define SYS_READLINK		0x59
+%define SYS_MPROTECT        0xa
+%define SYS_MMAP            0x9
+%define SYS_CLONE           0x38
+%define SYS_READLINK        0x59
 
-%define PAGE_SIZE			4096
-%define STACK_SIZE			(PAGE_SIZE * 1024)
-%define ENTRY_NPIE			0x600000
-%define MAX_BUFF			255
+%define PAGE_SIZE           4096
+%define STACK_SIZE          (PAGE_SIZE * 1024)
+%define ENTRY_NPIE          0x600000
+%define MAX_BUFF            255
 
-%define data(ptr, pos)			(ptr + pos * 8)
-%define data(ptr, pos, size)	(ptr + pos * size)
+%define data(ptr, pos)          (ptr + pos * 8)
+%define data(ptr, pos, size)    (ptr + pos * size)
 
 %macro clean_regs 0
 	xor esi, esi
@@ -124,7 +124,7 @@ Loader:
 ;; Allocate memory for the payload's segments
 load_segments:
 	mov rdi, [data(r12,r13)]	         ; Segment virtual address
-    mov rsi, [data(r14,r13)]	         ; Segment size
+	mov rsi, [data(r14,r13)]	         ; Segment size
 	call check_size
 	mov edx, PROT_READ | PROT_WRITE	
 	mov r10d, MAP_PRIVATE | MAP_ANONYMOUS	
