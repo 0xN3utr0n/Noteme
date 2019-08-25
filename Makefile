@@ -22,11 +22,17 @@ clean:
 clean2:
 	@rm -rf $(BPATH)/*.o
 
+# $ make test=1 
+# Since some values must be hardcoded into stage1.bin,
+# the same sample must be used always. Only compile for testing
+# purposes.
 stage1: stage1.asm
+ifdef test
 	@nasm -o $(BPATH)/$@.o -f elf64 $<
 	@$(CC) $(DYN) $(CFLAGS) -N -nostdlib -o $(BPATH)/$@ $(BPATH)/$@.o
 	@$(OBJCPY) $(BPATH)/$@ $(BPATH)/$@.bin
 	@rm $(BPATH)/$@
+endif
 
 Noteme: noteme.c injection.c
 	@$(CC) $(CFLAGS) $(SECFLAGS) $(DYN) -o $(BPATH)/Noteme $^
