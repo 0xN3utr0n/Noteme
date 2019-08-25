@@ -269,7 +269,7 @@ help ()
 {
     printf("Usage: noteme [-opt] \n\n");
     printf("Options ('<>' required fields):\n\n \
-    \t-p '<filepath>' Payload (Static ELF or Shellcode) binary\n \
+    \t-p '<filepath>' Payload (Statically linked ELF or Shellcode) binary\n \
     \t-t '<filepath>' Target ELF binary\n \
     \t-o '<filepath>' Output filename\n \
     \t-T Run the payload in a independent thread\n \
