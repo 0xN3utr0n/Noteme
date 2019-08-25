@@ -14,12 +14,9 @@ DYN      = -fPIC -pie
 OBJCPY   = objcopy -O binary --only-section=.text --only-section=.data
 
 # Targets
-all: clean stage1 Noteme clean2
+all: stage1 Noteme clean
 
 clean:
-	@rm -rf $(BPATH)/*
-
-clean2:
 	@rm -rf $(BPATH)/*.o
 
 # $ make test=1 
