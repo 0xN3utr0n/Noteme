@@ -53,8 +53,8 @@ section .data
 	perm_data: db 1, 0, 0, 0, 0, 0
 	link_str:  db '/proc/self/exe', 0
 	payload_entryp: dq 7
-	target_entryp : dq 8
-	segment_vaddr : dq 9
+	target_entryp:  dq 8
+	segment_vaddr:  dq 9
 
 section .text
 	global _start
@@ -123,8 +123,8 @@ Loader:
 
 ;; Allocate memory for the payload's segments
 load_segments:
-	mov rdi, [data(r12,r13)]	         ; Segment virtual address
-	mov rsi, [data(r14,r13)]	         ; Segment size
+	mov rdi, [data(r12,r13)]	         ; Segment's virtual address
+	mov rsi, [data(r14,r13)]	         ; Segment's size
 	call check_size
 	mov edx, PROT_READ | PROT_WRITE	
 	mov r10d, MAP_PRIVATE | MAP_ANONYMOUS	
@@ -183,7 +183,7 @@ check_size:
 	test rax, rdi
 	je exit                             ; return if it's already aligned
 	not rax
-	and rax, rdi                        ; Segment aligned address
+	and rax, rdi                        ; Segment's aligned address
 	add rsi, rdi
 	sub rsi, rax                        ; New segment size
 

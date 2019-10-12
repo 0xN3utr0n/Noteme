@@ -6,7 +6,7 @@
 
 BPATH    = ./bin
 CC       = cc
-CLFAGS 	 = -g -Wall -Wextra -Werror -pedantic -Wconversion -pedantic -Wconversion -Wformat-security  -std=gnu99 -march=x86-64
+CLFAGS 	 = -g -Wall -Wextra -Werror -pedantic -Wconversion -Wformat-security  -std=gnu99 -march=x86-64
 SECFLAGS = -fstack-clash-protection -fstack-protector --param ssp-buffer-size=4 
 SECFLAGS += -D_FORTIFY_SOURCE=2 -Wl,-z,relro,-z,now -O3
 SECFLAGS += -Wl,-z,noexecstack -fomit-frame-pointer
@@ -21,8 +21,7 @@ clean:
 
 # $ make test=1 
 # Since some values must be hardcoded into stage1.bin,
-# the same sample must be used always. Only compile for testing
-# purposes.
+# the same sample must be used always. Only compile for testing purposes.
 stage1: stage1.asm
 ifdef test
 	@nasm -o $(BPATH)/$@.o -f elf64 $<

@@ -11,22 +11,30 @@
 #define MAX_NUM_LIST            5
 #define ADDR_SIZE               8
 
-typedef struct ptload
+typedef struct
 {
     uint64_t size;
-    Elf64_Phdr *list[5];
+    Elf64_Phdr *list[MAX_NUM_LIST];
 } ptload_t;
 
 
 
+static inline size_t thread_offset(const int64_t);
+static bool check_elf(binary_t *, const uint8_t);
+static bool mod_stage1(const ptload_t, binary_t *, void *, binary_t *);
+static ptload_t pack_payload(binary_t *);
+static ptload_t scan_elf_payload (binary_t *);
+static void bin_init(binary_t *, char *, const int64_t, const int);
+
+
 
 /*
- * Small wrapper for modifying the offsets depending
+ * For modifying the offsets depending
  * on whether the THREAD option has been set or not.
 */
 
-static inline size_t
-thread_offset (int64_t data_off)
+size_t
+thread_offset (const int64_t data_off)
 {
     return (global_flags & THREAD)? (size_t)data_off : (size_t)data_off - NON_THREAD_OFF;
 }
@@ -35,7 +43,7 @@ thread_offset (int64_t data_off)
 
 
 void
-bin_init (binary_t *ptr, char *name, int64_t len, int opt)
+bin_init (binary_t *ptr, char *name, const int64_t len, const int opt)
 {
     uint8_t *temp_mem = NULL;
 
@@ -61,10 +69,10 @@ bin_init (binary_t *ptr, char *name, int64_t len, int opt)
     }
 
     if (len > 0)
-         ptr->st.st_size += len;
+            ptr->st.st_size += len;
 
     if (ptr->mem != NULL) //If it has already an allocated memory, make a backup and ...
-        temp_mem = ptr->mem;
+            temp_mem = ptr->mem;
 
     ptr->mem = mmap(NULL, (uint64_t)ptr->st.st_size, PROT_READ | PROT_WRITE, opt, ptr->fd, 0);
     if (ptr->mem == MAP_FAILED)
@@ -73,8 +81,8 @@ bin_init (binary_t *ptr, char *name, int64_t len, int opt)
         goto fatal;
     }
 
-    if (temp_mem != NULL)//... copy the content to newly allocated one.
-        memcpy(ptr->mem, temp_mem, (size_t)len);
+    if (temp_mem != NULL)//... copy the content to the newly allocated one.
+            memcpy(ptr->mem, temp_mem, (size_t)len);
 
     ptr->name = name;
 
@@ -113,7 +121,7 @@ scan_elf_payload (binary_t *payload)
         }
     }
 
-    printf("Payload size\t-> %ldKB\n\n", info.size/1000);
+    printf("Payload's size\t-> %ldKB\n\n", info.size/1000);
 
     return info;
 }
@@ -148,7 +156,7 @@ pack_payload (binary_t *payload)
     }
 
     temp = new_pmem;
-    for(int8_t i = 0; i < MAX_NUM_LIST && seg_info.list[i] != NULL; i++)
+    for (int8_t i = 0; i < MAX_NUM_LIST && seg_info.list[i] != NULL; i++)
     {
         memcpy(temp, seg_info.list[i]->p_offset + payload->mem, seg_info.list[i]->p_filesz);
         temp += seg_info.list[i]->p_filesz;
@@ -165,19 +173,19 @@ pack_payload (binary_t *payload)
 /*
  * This function modifies the stub (for now stage1) with
  * hardcoded values such as addresses and segments' size. This information
- * is required at runtime, otherwise the injected code will
- * segfault.
+ * is required at runtime, otherwise the injected code will segfault.
  */
 
 bool
-mod_stage1 (ptload_t data, binary_t *stage1, void *payload_entryp, binary_t *final)
+mod_stage1 (const ptload_t data, binary_t *stage1, void *payload_entryp, binary_t *final)
 {
-    size_t size_off         = thread_offset(SIZE_DATA_OFF);
-    size_t addr_off         = thread_offset(ADDR_DATA_OFF);
-    size_t perm_off         = thread_offset(PERM_DATA_OFF);
-    uint8_t flags           = 0;
-    Elf64_Phdr *txt_segm    = search_segment(final, TXT);
-    Elf64_Phdr *new_segm    = search_segment(final, ANY);
+    size_t size_off   = thread_offset(SIZE_DATA_OFF);
+    size_t addr_off   = thread_offset(ADDR_DATA_OFF);
+    size_t perm_off   = thread_offset(PERM_DATA_OFF);
+    uint8_t flags     = 0;
+    
+    const Elf64_Phdr *txt_segm = search_segment(final, TXT);
+    const Elf64_Phdr *new_segm = search_segment(final, ANY);
 
     if (!txt_segm)
     {
@@ -232,11 +240,11 @@ mod_stage1 (ptload_t data, binary_t *stage1, void *payload_entryp, binary_t *fin
 
 /*
  * Check if @elf contains a valid ELF binary.
- * Only the header is checked.
+ * Only the header is analyzed.
 */
 
 bool
-check_elf(binary_t * elf, uint8_t hide)
+check_elf(binary_t * elf, const uint8_t hide)
 {
     elf->head = (Elf64_Ehdr*) elf->mem;
 
@@ -272,7 +280,7 @@ help ()
     \t-p '<filepath>' Payload (Statically linked ELF or Shellcode) binary\n \
     \t-t '<filepath>' Target ELF binary\n \
     \t-o '<filepath>' Output filename\n \
-    \t-T Run the payload in a independent thread\n \
+    \t-T Run the payload in an independent thread\n \
     \t-h This help\n" );
     puts("\n");
 }

@@ -1,13 +1,16 @@
 # Noteme
-Noteme is a simple ELF packer POC which parasites a target binary.
-Said target can be either a shared object or an executable, but it's required to be 
-x86_64 compatible. The payload can be a shellcode or an statically linked ELF binary.
+Noteme is a polymorphic ELF packer/crypter. It aims to create hardened and stealthy troyans.
+The target can either be a shared object or an executable, but it's required to be 
+x86_64 compatible. The payload can be a shellcode or a statically linked ELF binary.
+
+Bear in mind that Noteme is still at a very early state of development. Therefore, only
+the userland execve() has been implemented yet.
 
 ## PT_NOTE Infection
 If the payload fits inside the PT_NOTE segment, replace the content. On the
 other hand, if the payload is bigger, append it as a new PT_LOAD segment and reference it
 from the PT_NOTE's program header entry. In either case, the same redirection technique will 
-be applied: overwrite frame_dummy's references. If required, an stub will be injected (Text segment padding injection) too.
+be applied: overwrite frame_dummy's references. If required, a stub will be injected (Text segment padding injection) too.
 
 This kind of technique is ideal for long term persistence due to its stealthiness and
 simplicity. 
@@ -18,8 +21,8 @@ nasm (Netwide Assembler)
 gcc & make
 ```
 ## ELF Payloads
-Right now, C and GO payloads have been successfully tested, with the only 
-requirement that the binary base virtual address must be set to a high value (to avoid page conflict).  
+Right now, C and Go payloads have been successfully tested, with the only 
+requirement that the binary's base virtual address must be set to a high value (to avoid page conflict).  
 
 C payloads:
 ```
@@ -56,5 +59,6 @@ Options ('<>' required fields):
 ## TODO
 * ARM support
 * <del> ELF payload support </del>
-* Encryption support
+* Binary compression support
+* Binary encryption support
 * Anti-reverse engineering support 

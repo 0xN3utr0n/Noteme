@@ -1,50 +1,54 @@
 #include "injection.h"
 
+static void repair_sections(binary_t *, const size_t, const size_t, const size_t);
+static Elf64_Phdr *new_segment(binary_t *, binary_t *);
+static uint64_t small_payload(Elf64_Phdr *, uint8_t *, binary_t *, binary_t *);
+static uint64_t big_payload(Elf64_Phdr *, uint8_t *, binary_t *, binary_t *);
 
+
+uint32_t global_flags = 0;
+uint64_t final_entryp = 0;
 
 /*
- * Just search for specified segment.
+ * Just search for the specified segment.
  * Returns a pointer to it.
  */
 
 Elf64_Phdr *
-search_segment (binary_t *target, int flags)
+search_segment (binary_t *target, const int flags)
 {
     Elf64_Phdr *seg_table = target->segments;
     Elf64_Phdr *last_segm = target->segments;
 
     for (int8_t i = 0; i < target->head->e_phnum; seg_table++, i++)
     {
-        /* Search for the last PT_LOAD entry.
-        Usually the Data segment */
-        if (flags == ANY && seg_table->p_type == PT_LOAD)
-        {
-            if (seg_table->p_vaddr > last_segm->p_vaddr)
-                    last_segm = seg_table;
-        }
-
-        // Search for Text segment. Usually the one pointed by entrypoint.
-        if (flags == TXT && seg_table->p_type == PT_LOAD)
-        {
-            if ( target->head->e_entry >= seg_table->p_vaddr &&
+        switch (flags) {
+            case ANY:
+                 /* Search for the last PT_LOAD entry.
+                Usually the Data segment */
+                if (seg_table->p_type == PT_LOAD && (seg_table->p_vaddr > last_segm->p_vaddr))
+                        last_segm = seg_table;
+                break;
+            case TXT:
+                // Search for Text segment. Usually the one pointed by entrypoint.
+                if (seg_table->p_type == PT_LOAD && target->head->e_entry >= seg_table->p_vaddr &&
                     target->head->e_entry < (seg_table->p_vaddr + seg_table->p_filesz))
-                    return seg_table;
+                        return seg_table;
+                break;
+            case DYN:
+                if (seg_table->p_type == PT_DYNAMIC)
+                        return seg_table;
+                break;
+            case DATA:
+                //Search for the data segment. Usually the one with RW permissions.
+                if (seg_table->p_type == PT_LOAD && seg_table->p_flags == (PF_R | PF_W))
+                        return seg_table;
+                break;
+            case NOTE:
+                if (seg_table->p_type == PT_NOTE)
+                        return seg_table;
+                break;
         }
-
-        // Search for Dynamic segment.
-        if (flags == DYN && seg_table->p_type == PT_DYNAMIC)
-                return seg_table;
-
-        //Search for the data segment. Usually the one with RW permissions.
-        if (flags == DATA && seg_table->p_type == PT_LOAD)
-        {
-            if (seg_table->p_flags == (PF_R | PF_W))
-                    return seg_table;
-        }
-
-        //Search for the Note entry
-        if (flags == NOTE && seg_table->p_type == PT_NOTE)
-                return seg_table;
     }
 
     return (flags != ANY) ? NULL : last_segm;
@@ -61,7 +65,7 @@ search_segment (binary_t *target, int flags)
  */
 
 void
-set_entrypoint (binary_t *target, uint64_t payload_addr)
+set_entrypoint (binary_t *target, const uint64_t payload_addr)
 {
     void *p_init            = NULL;
     Elf64_Shdr *init_array  = NULL;
@@ -125,7 +129,7 @@ basic:
  */
 
 Elf64_Shdr *
-search_section (binary_t *target, char *sec_name)
+search_section (binary_t *target, const char *sec_name)
 {
     if (!(global_flags & STRIPPED))
     {
@@ -147,7 +151,7 @@ search_section (binary_t *target, char *sec_name)
     if (p_dynamic != NULL)
     {
         Elf64_Dyn  *dyn   = (Elf64_Dyn*)(p_dynamic->p_offset + target->mem);
-        Elf64_Shdr *fake  = calloc(sizeof(Elf64_Shdr), 1); //Create a fake section
+        Elf64_Shdr *fake  = calloc( 1, sizeof(Elf64_Shdr)); //Create a fake section handler
         while (dyn->d_tag != DT_NULL)
         {
            if ((dyn->d_tag == DT_INIT_ARRAY && !strcmp(sec_name, ".init_array")) ||
@@ -181,13 +185,13 @@ search_section (binary_t *target, char *sec_name)
 
 
 /*
- * After an injection, in order to not call for attention,
+ * After an injection, in order to avoid attention,
  * the sections must be repaired, so tools such as readelf don't
  * show any warnings.
  */
 
 void
-repair_sections (binary_t *target, size_t data_size, size_t data_size2, size_t offset)
+repair_sections (binary_t *target, const size_t data_size, const size_t data_size2, const size_t offset)
 {
     Elf64_Shdr *shdr = (Elf64_Shdr *) (target->mem + target->head->e_shoff);
 
@@ -255,7 +259,7 @@ new_segment (binary_t *target, binary_t *payload)
         return NULL;
     }
 
-    if ((new = (Elf64_Phdr*) calloc(sizeof(Elf64_Phdr), 1)) == NULL)
+    if ((new = (Elf64_Phdr*) calloc(1, sizeof(Elf64_Phdr))) == NULL)
     {
         perror("Failed to allocate memory");
         return NULL;
@@ -385,9 +389,6 @@ big_payload (Elf64_Phdr *Note, uint8_t *mem, binary_t *target, binary_t *payload
 
 
 
-/*
- * Injector wrapper
- */
 
 uint8_t *
 inject_payload (binary_t target, binary_t payload, size_t *bin_size)
