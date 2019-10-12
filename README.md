@@ -1,5 +1,5 @@
 # Noteme
-Noteme is a polymorphic ELF packer/crypter. It aims to create hardened and stealthy troyans.
+Noteme is an ELF packer/crypter that aims to create hardened and stealthy troyans.
 The target can either be a shared object or an executable, but it's required to be 
 x86_64 compatible. The payload can be a shellcode or a statically linked ELF binary.
 
