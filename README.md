@@ -22,7 +22,7 @@ gcc & make
 ```
 ## ELF Payloads
 Right now, C and Go payloads have been successfully tested, with the only 
-requirement that the binary's base virtual address must be set to a high value (to avoid page conflict).  
+requirement being that the binary's base virtual address must be set to a high value (to avoid page conflict).  
 
 C payloads:
 ```
