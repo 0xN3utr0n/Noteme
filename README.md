@@ -3,8 +3,7 @@ Noteme is an ELF packer/crypter that aims to create hardened and stealthy troyan
 The target can either be a shared object or an executable, but it's required to be 
 x86_64 compatible. The payload can be a shellcode or a statically linked ELF binary.
 
-Bear in mind that Noteme is still at a very early state of development. Therefore, only
-the userland execve() has been implemented yet.
+Bear in mind that Noteme is still at a very early state of development. 
 
 ## PT_NOTE Infection
 If the payload fits inside the PT_NOTE segment, replace the content. On the
