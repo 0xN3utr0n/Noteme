@@ -6,7 +6,7 @@
 
 BPATH    = ./bin
 CC       = cc
-CLFAGS 	 = -g -Wall -Wextra -Werror -pedantic -Wconversion -Wformat-security  -std=gnu99 -march=x86-64
+CFLAGS 	 = -g -Wall -Wextra -Werror -pedantic -Wconversion -Wformat-security  -std=gnu99 -march=x86-64
 SECFLAGS = -fstack-clash-protection -fstack-protector --param ssp-buffer-size=4 
 SECFLAGS += -D_FORTIFY_SOURCE=2 -Wl,-z,relro,-z,now -O3
 SECFLAGS += -Wl,-z,noexecstack -fomit-frame-pointer
